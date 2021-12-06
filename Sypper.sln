@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31919.166
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sypper.Domain", "Sypper.Domain", "{ADA0D17D-C950-4EDE-9F68-29A859C863E4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sypper.Domain", "Sypper.Domain\Sypper.Domain.csproj", "{CE0B8EB1-A57B-427F-942C-2EA37533465C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CE0B8EB1-A57B-427F-942C-2EA37533465C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE0B8EB1-A57B-427F-942C-2EA37533465C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE0B8EB1-A57B-427F-942C-2EA37533465C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE0B8EB1-A57B-427F-942C-2EA37533465C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CE0B8EB1-A57B-427F-942C-2EA37533465C} = {ADA0D17D-C950-4EDE-9F68-29A859C863E4}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4AD5B35E-35A6-4DF5-A4AB-6DA66229E389}
+	EndGlobalSection
+EndGlobal
