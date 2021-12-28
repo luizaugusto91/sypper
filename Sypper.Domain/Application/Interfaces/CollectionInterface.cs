@@ -30,7 +30,7 @@ namespace Sypper.Domain.Application.Interfaces
         /// <typeparam name="T">Deve receber uma classe herdade de NoSQLModel</typeparam>  
         /// <param name="page">Numero da pagina que deseja</param>
         /// <returns>List<T></returns>
-        /// <example>List<T> lista = object.ReadList();</example>
+        /// <example>List<T> lista = object.ReadList(1);</example>
         public ReturnModel<List<T>> ReadList(int page);
 
         /// <summary>

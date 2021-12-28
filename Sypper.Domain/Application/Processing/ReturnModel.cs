@@ -4,10 +4,10 @@ namespace Sypper.Domain.Generico.Processing
 {
     public class ReturnModel<T>
     {
-        public ReturnEnum tipo { get; set; }
-        public string mensagem { get; set; }
-        public ErrorModel erro { get; set; }
-        public T retorno { get; set; }
+        public ReturnEnum tipo { get; set; } = ReturnEnum.NoProccess;
+        public string mensagem { get; set; } = string.Empty;
+        public ErrorModel erro { get; set; } = new ErrorModel();
+        public T retorno { get; set; } = default(T);
 
         public ReturnModel()
         {

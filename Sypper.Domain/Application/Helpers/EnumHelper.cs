@@ -9,11 +9,11 @@ namespace Sypper.Domain.Application.Helpers
     public static class EnumHelper
     {
         /// <summary>
-        /// Gets an attribute on an enum field value
+        /// Obtém um atributo em um valor de campo enum
         /// </summary>
         /// <typeparam name="T">The type of the attribute you want to retrieve</typeparam>
         /// <param name="enumVal">The enum value</param>
-        /// <returns>The attribute of type T that exists on the enum value</returns>
+        /// <returns>O atributo de um type T existe em um valor enum</returns>
         /// <example>string desc = myEnumVariable.GetAttributeOfType<DescriptionAttribute>().Description;</example>
         public static T GetAttributeOfType<T>(this Enum enumVal) where T : System.Attribute
         {

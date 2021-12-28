@@ -7,7 +7,7 @@ namespace Sypper.Domain.Application.Processing
 {
     public class NoSQLModel
     {
-        private string table { get; set; }
+        private string table { get; set; } = string.Empty;
 
         public ObjectId _id { get; set; }
 
@@ -261,6 +261,7 @@ namespace Sypper.Domain.Application.Processing
             // Obtem os campos da classe
             List<FieldsModel> keys = new List<FieldsModel>();
             var props = this.GetType().GetProperties();
+            
             foreach (var prop in props)
             {
                 // Captura os dados da chave primaria
@@ -284,7 +285,7 @@ namespace Sypper.Domain.Application.Processing
                 }
             }
 
-            foreach (var key in keys)
+            keys.ForEach(key =>
             {
                 var val = key.value;
                 string value;
@@ -338,7 +339,7 @@ namespace Sypper.Domain.Application.Processing
                 }
                 // Adiciona o registro a lista
                 result.Add(new FieldsFilterModel() { name = key.name, type = key.type, method = TypeFilterEnum.Igual, value = value });
-            }
+            });
             return result;
         }
 
@@ -350,7 +351,7 @@ namespace Sypper.Domain.Application.Processing
             {
                 var groups = filters.GroupBy(r => r.name).ToList();
 
-                foreach (var item in groups) 
+                groups.ForEach(item =>
                 {
                     if (item.Count() > 1)
                     {
@@ -368,14 +369,14 @@ namespace Sypper.Domain.Application.Processing
                         }
                         querys.Add("\"" + FieldName + "\": " + FilterBy(TypeFilter, Type, values));
                     }
-                    else 
+                    else
                     {
                         foreach (var field in item)
                         {
                             querys.Add("\"" + field.name + "\": " + FilterBy(field.method, field.type, field.value));
                         }
                     }
-                }
+                });
 
                 result = "{" + string.Join(", ",querys.ToList()) + "}";
             }

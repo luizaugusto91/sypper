@@ -9,7 +9,7 @@ namespace Sypper.Domain.Application.Interfaces
      */
 
     public interface EntityInterface<T>
-    {
+    {        
         public ReturnModel<List<T>> ReadList();
 
         public ReturnModel<List<T>> ReadList(int page);

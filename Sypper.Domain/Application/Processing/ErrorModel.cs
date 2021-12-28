@@ -2,10 +2,10 @@
 {
     public class ErrorModel
     {
-        public int codigo { get; set; }
-        public string mensagem { get; set; }
-        public string detalhes { get; set; }
-        public string stack { get; set; }
+        public int codigo { get; set; } = -1;
+        public string mensagem { get; set; } = string.Empty;
+        public string detalhes { get; set; } = string.Empty;
+        public string stack { get; set; } = string.Empty;
 
         public ErrorModel() { }
 
