@@ -7,7 +7,7 @@ namespace Sypper.Infra.EntityDataSet
 {
     public class CollectionDataSet<T> where T: NoSQLModel
     {
-        public MongoDBConnectionInfra Conn;
+        public MongoDBConnectionInfra Conn { get; set; } = new MongoDBConnectionInfra();
 
         private IMongoCollection<T> BookEntity;
         public T Entity;

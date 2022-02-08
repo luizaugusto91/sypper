@@ -2,14 +2,8 @@
 
 namespace Sypper.Domain.Application.Interfaces
 {
-    /*
-    EntityInterface<T>
-        Uso:    > Utilizar em classes de Infra que possuam conexão com entidades relacionais do PostgreSQL
-                > Para toda EntityInterface é necessário um Model derivado da entidade que se deseja manipular <T>.
-     */
-
-    public interface EntityInterface<T>
-    {        
+    public interface IServiceInterface<T>
+    {
         public ReturnModel<List<T>> ReadList();
 
         public ReturnModel<List<T>> ReadList(int page);
