@@ -1,27 +1,30 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <ApplicationIcon>sypper.ico</ApplicationIcon>
-    <SignAssembly>False</SignAssembly>
-    <Copyright>Luiz Augusto da Silva</Copyright>
-    <PackageProjectUrl>https://github.com/jovemti/sypper</PackageProjectUrl>
-    <PackageIcon>sypper.png</PackageIcon>
-    <NeutralLanguage>pt-BR</NeutralLanguage>
     <Authors>Luiz Augusto da Silva</Authors>
     <Description>Pacote de classes base para manipulação de entidades e collections para bancos Postgres e Mongo.</Description>
+    <PackageProjectUrl>https://github.com/jovemti/sypper</PackageProjectUrl>
+    <PackageIcon>sypper.png</PackageIcon>
+    <RepositoryUrl>https://github.com/jovemti/sypper</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <NeutralLanguage>pt-BR</NeutralLanguage>
+    <PackageTags>sql; nosql; postgres; mongodb;</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="sypper.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="sypper.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\sypper.png">
-      <Pack>True</Pack>
+    <None Include="..\sypper.png" Link="sypper.png">
       <PackagePath>\</PackagePath>
+      <Pack>True</Pack>
     </None>
   </ItemGroup>
 
