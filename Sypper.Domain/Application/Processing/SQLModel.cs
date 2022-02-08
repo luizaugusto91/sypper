@@ -5,7 +5,7 @@ namespace Sypper.Domain.Application.Processing
 {
     public class SQLModel
     {
-        private string table { get; set; }
+        private string table { get; set; } = string.Empty;
 
         #region Table
         public void SetTable(string Table)
@@ -28,7 +28,7 @@ namespace Sypper.Domain.Application.Processing
             {
                 case TypeFilterEnum.Igual:          // ==
                     {
-                        if (Type == TypeCode.String || Type == TypeCode.DateTime) result = $"= {Value}";
+                        if (Type == TypeCode.String || Type == TypeCode.DateTime) result = $"= '{Value}'";
                         else result = $"= {Value}";
                     }
                     break;

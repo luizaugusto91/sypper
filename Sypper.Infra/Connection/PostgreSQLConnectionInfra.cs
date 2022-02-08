@@ -2,9 +2,9 @@
 using Sypper.Domain.Infra.Connection;
 using Npgsql;
 using System.Data;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Reflection;
+using Sypper.Domain.Application.Processing;
+using Sypper.Domain.Infra.Data;
 
 namespace Sypper.Infra.Connection
 {    
@@ -63,27 +63,27 @@ namespace Sypper.Infra.Connection
         #endregion
 
         #region Transaction
-        private NpgsqlTransaction Transaction()
+        private NpgsqlTransaction? Transaction()
         {
             if (UseTransction)
             {
                 return Conn.BeginTransaction();
             }
-            return null;
+            return default(NpgsqlTransaction);
         }
 
-        private NpgsqlTransaction Transaction(NpgsqlConnection Connection)
+        private NpgsqlTransaction? Transaction(NpgsqlConnection Connection)
         {
             if (UseTransction)
             {
                 return Connection.BeginTransaction();
             }
-            return null;
+            return default(NpgsqlTransaction);
         }
 
-        private void Roolback(NpgsqlTransaction Transaction)
+        private void Roolback(NpgsqlTransaction? Transaction)
         {
-            if (UseTransction)
+            if (UseTransction && Transaction != null)
             {
                 try
                 {
@@ -97,9 +97,9 @@ namespace Sypper.Infra.Connection
             }
         }
 
-        private void Commit(NpgsqlTransaction Transaction)
+        private void Commit(NpgsqlTransaction? Transaction)
         {
-            if (UseTransction)
+            if (UseTransction && Transaction != null)
             {
                 Transaction.Commit();
             }
@@ -453,7 +453,7 @@ namespace Sypper.Infra.Connection
             * Metodo preferencial para retornar consultar em DataTable.
             */
             ReturnModel<DataTable> result = new ReturnModel<DataTable>();
-            NpgsqlTransaction ExecuteTransaction;
+            NpgsqlTransaction? ExecuteTransaction;
             Conn.Open();
             ExecuteTransaction = Transaction();
             try
@@ -621,6 +621,161 @@ namespace Sypper.Infra.Connection
             return result;
         }
 
+        public ReturnModel<List<T>> QueryToList<T>(T Entity) where T : SQLModel
+        {
+            /*
+             * Metodo preferencial para retornar consultar direto em objetos.
+             * Para utilizar este metodo, lembre-se que as colunas do SQL devem possuir o mesmo nome dos atributos das classes.
+             * Obs.: Não ha problema algum em haver campos adicionas ou faltando na consulta em comparação ao objeto.
+             */
+            List<T> Lista = new List<T>();
+            ReturnModel<List<T>> result = new ReturnModel<List<T>>();
+            NpgsqlTransaction ExecuteTransaction;
+
+            PostgreSQLConnectionInfra Connection = new PostgreSQLConnectionInfra(Settings);
+            Connection.Conn.Open();
+            ExecuteTransaction = Transaction(Connection.Conn);
+            string SQL = string.Empty;
+            try
+            {
+                SQL = Entity.Select();
+                NpgsqlCommand Command = new NpgsqlCommand(SQL, Connection.Conn) { CommandTimeout = 0 };
+                NpgsqlDataReader Reader = Command.ExecuteReader();
+                DataTable Table = new DataTable(Entity.GetTable());
+                Table.Load(Reader);
+                Commit(ExecuteTransaction);
+
+                if (Table.Rows.Count > 0)
+                {
+                    Lista = ConvertDataTable<T>(Table);
+                }
+                else
+                {
+                    Lista = new List<T>();
+                }
+                result.Success("Consulta realizada com sucesso.", Lista);
+            }
+            catch (NpgsqlException e)
+            {
+                result.Fail("Falha ao executar a instrução.", new ErrorModel(e.ErrorCode, e.Message, SQL, e.StackTrace));
+                Roolback(ExecuteTransaction);
+            }
+            catch (Exception e)
+            {
+                result.Error("Erro ao executar a instrução.", new ErrorModel(0, e.Message, SQL, e.StackTrace));
+                Roolback(ExecuteTransaction);
+            }
+            finally
+            {
+                if (result.Validate()) Connection.Close();
+            }
+            return result;
+        }
+
+        public ReturnModel<List<T>> QueryToList<T>(T Entity, dynamic KeyFilter) where T : SQLModel
+        {
+            /*
+             * Metodo preferencial para retornar consultar direto em objetos.
+             * Para utilizar este metodo, lembre-se que as colunas do SQL devem possuir o mesmo nome dos atributos das classes.
+             * Obs.: Não ha problema algum em haver campos adicionas ou faltando na consulta em comparação ao objeto.
+             */
+            List<T> Lista = new List<T>();
+            ReturnModel<List<T>> result = new ReturnModel<List<T>>();
+            NpgsqlTransaction ExecuteTransaction;
+            string SQL = string.Empty;
+
+            PostgreSQLConnectionInfra Connection = new PostgreSQLConnectionInfra(Settings);
+            Connection.Conn.Open();
+            ExecuteTransaction = Transaction(Connection.Conn);
+
+            try
+            {
+                SQL = Entity.Select(Entity.FilterByKey(KeyFilter.ToString()));
+                NpgsqlCommand Command = new NpgsqlCommand(SQL, Connection.Conn) { CommandTimeout = 0 };
+                NpgsqlDataReader Reader = Command.ExecuteReader();
+                DataTable Table = new DataTable(Entity.GetTable());
+                Table.Load(Reader);
+                Commit(ExecuteTransaction);
+
+                if (Table.Rows.Count > 0)
+                {
+                    Lista = ConvertDataTable<T>(Table);
+                }
+                else
+                {
+                    Lista = new List<T>();
+                }
+                result.Success("Consulta realizada com sucesso.", Lista);
+            }
+            catch (NpgsqlException e)
+            {
+                result.Fail("Falha ao executar a instrução.", new ErrorModel(e.ErrorCode, e.Message, SQL, e.StackTrace));
+                Roolback(ExecuteTransaction);
+            }
+            catch (Exception e)
+            {
+                result.Error("Erro ao executar a instrução.", new ErrorModel(0, e.Message, SQL, e.StackTrace));
+                Roolback(ExecuteTransaction);
+            }
+            finally
+            {
+                if (result.Validate()) Connection.Close();
+            }
+            return result;
+        }
+
+        public ReturnModel<List<T>> QueryToList<T>(T Entity, List<FieldsFilterModel> FilterByFields, bool ConditionalAnd = true) where T : SQLModel
+        {
+            /*
+             * Metodo preferencial para retornar consultar direto em objetos.
+             * Para utilizar este metodo, lembre-se que as colunas do SQL devem possuir o mesmo nome dos atributos das classes.
+             * Obs.: Não ha problema algum em haver campos adicionas ou faltando na consulta em comparação ao objeto.
+             */
+            List<T> Lista = new List<T>();
+            ReturnModel<List<T>> result = new ReturnModel<List<T>>();
+            NpgsqlTransaction ExecuteTransaction;
+            string SQL = string.Empty;
+
+            PostgreSQLConnectionInfra Connection = new PostgreSQLConnectionInfra(Settings);
+            Connection.Conn.Open();
+            ExecuteTransaction = Transaction(Connection.Conn);
+
+            try
+            {
+                SQL = Entity.Select(FilterByFields, ConditionalAnd);
+                NpgsqlCommand Command = new NpgsqlCommand(SQL, Connection.Conn) { CommandTimeout = 0 };
+                NpgsqlDataReader Reader = Command.ExecuteReader();
+                DataTable Table = new DataTable(Entity.GetTable());
+                Table.Load(Reader);
+                Commit(ExecuteTransaction);
+
+                if (Table.Rows.Count > 0)
+                {
+                    Lista = ConvertDataTable<T>(Table);
+                }
+                else
+                {
+                    Lista = new List<T>();
+                }
+                result.Success("Consulta realizada com sucesso.", Lista);
+            }
+            catch (NpgsqlException e)
+            {
+                result.Fail("Falha ao executar a instrução.", new ErrorModel(e.ErrorCode, e.Message, SQL, e.StackTrace));
+                Roolback(ExecuteTransaction);
+            }
+            catch (Exception e)
+            {
+                result.Error("Erro ao executar a instrução.", new ErrorModel(0, e.Message, SQL, e.StackTrace));
+                Roolback(ExecuteTransaction);
+            }
+            finally
+            {
+                if (result.Validate()) Connection.Close();
+            }
+            return result;
+        }
+
         public ReturnModel<List<T>> QueryToList<T>(string SQL, string Tabela, bool Especial = false)
         {
             /*
@@ -691,6 +846,110 @@ namespace Sypper.Infra.Connection
                 NpgsqlCommand Command = new NpgsqlCommand(SQL, Connection.Conn) { CommandTimeout = 0 };
                 NpgsqlDataReader Reader = await Command.ExecuteReaderAsync();
                 DataTable Table = new DataTable(Tabela);
+                Table.Load(Reader);
+                Commit(ExecuteTransaction);
+
+                if (Table.Rows.Count > 0)
+                {
+                    Lista = ConvertDataTable<T>(Table);
+                }
+                else
+                {
+                    Lista = new List<T>();
+                }
+                result.Success("Consulta realizada com sucesso.", Lista);
+            }
+            catch (NpgsqlException e)
+            {
+                result.Fail("Falha ao executar a instrução.", new ErrorModel(e.ErrorCode, e.Message, SQL, e.StackTrace));
+                Roolback(ExecuteTransaction);
+            }
+            catch (Exception e)
+            {
+                result.Error("Erro ao executar a instrução.", new ErrorModel(0, e.Message, SQL, e.StackTrace));
+                Roolback(ExecuteTransaction);
+            }
+            finally
+            {
+                if (result.Validate()) Connection.Close();
+            }
+            return result;
+        }
+
+        public async Task<ReturnModel<List<T>>> QueryToListAsync<T>(T Entity, dynamic KeyFilter) where T : SQLModel
+        {
+            /*
+             * Metodo preferencial para retornar consultar direto em objetos.
+             * Para utilizar este metodo, lembre-se que as colunas do SQL devem possuir o mesmo nome dos atributos das classes.
+             * Obs.: Não ha problema algum em haver campos adicionas ou faltando na consulta em comparação ao objeto.
+             */
+            List<T> Lista = new List<T>();
+            ReturnModel<List<T>> result = new ReturnModel<List<T>>();
+            NpgsqlTransaction ExecuteTransaction;
+            string SQL = string.Empty;
+
+            PostgreSQLConnectionInfra Connection = new PostgreSQLConnectionInfra(Settings);
+            Connection.Conn.Open();
+            ExecuteTransaction = Transaction(Connection.Conn);
+
+            try
+            {
+                SQL = Entity.Select(Entity.FilterByKey(KeyFilter.ToString()));
+                NpgsqlCommand Command = new NpgsqlCommand(SQL, Connection.Conn) { CommandTimeout = 0 };
+                NpgsqlDataReader Reader = await Command.ExecuteReaderAsync();
+                DataTable Table = new DataTable(Entity.GetTable());
+                Table.Load(Reader);
+                Commit(ExecuteTransaction);
+
+                if (Table.Rows.Count > 0)
+                {
+                    Lista = ConvertDataTable<T>(Table);
+                }
+                else
+                {
+                    Lista = new List<T>();
+                }
+                result.Success("Consulta realizada com sucesso.", Lista);
+            }
+            catch (NpgsqlException e)
+            {
+                result.Fail("Falha ao executar a instrução.", new ErrorModel(e.ErrorCode, e.Message, SQL, e.StackTrace));
+                Roolback(ExecuteTransaction);
+            }
+            catch (Exception e)
+            {
+                result.Error("Erro ao executar a instrução.", new ErrorModel(0, e.Message, SQL, e.StackTrace));
+                Roolback(ExecuteTransaction);
+            }
+            finally
+            {
+                if (result.Validate()) Connection.Close();
+            }
+            return result;
+        }
+
+        public async Task<ReturnModel<List<T>>> QueryToListAsync<T>(T Entity, List<FieldsFilterModel> FilterByFields, bool ConditionalAnd = true) where T : SQLModel
+        {
+            /*
+             * Metodo preferencial para retornar consultar direto em objetos.
+             * Para utilizar este metodo, lembre-se que as colunas do SQL devem possuir o mesmo nome dos atributos das classes.
+             * Obs.: Não ha problema algum em haver campos adicionas ou faltando na consulta em comparação ao objeto.
+             */
+            List<T> Lista = new List<T>();
+            ReturnModel<List<T>> result = new ReturnModel<List<T>>();
+            NpgsqlTransaction ExecuteTransaction;
+            string SQL = string.Empty;
+
+            PostgreSQLConnectionInfra Connection = new PostgreSQLConnectionInfra(Settings);
+            Connection.Conn.Open();
+            ExecuteTransaction = Transaction(Connection.Conn);
+
+            try
+            {
+                SQL = Entity.Select(FilterByFields, ConditionalAnd);
+                NpgsqlCommand Command = new NpgsqlCommand(SQL, Connection.Conn) { CommandTimeout = 0 };
+                NpgsqlDataReader Reader = await Command.ExecuteReaderAsync();
+                DataTable Table = new DataTable(Entity.GetTable());
                 Table.Load(Reader);
                 Commit(ExecuteTransaction);
 

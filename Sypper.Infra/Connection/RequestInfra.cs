@@ -37,7 +37,7 @@ namespace Sypper.Infra.Connection
             }
             catch (HttpRequestException h)
             {
-                result.Fail($"Ocorreu uma falha ao realizar a requisição. Erro: {h.InnerException} - {h.Message}", null);
+                result.Fail($"Ocorreu uma falha ao realizar a requisição. Erro: {h.InnerException} - {h.Message}");
             }
             catch (Exception e)
             {

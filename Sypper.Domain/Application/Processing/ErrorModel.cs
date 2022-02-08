@@ -4,8 +4,8 @@
     {
         public int codigo { get; set; } = -1;
         public string mensagem { get; set; } = string.Empty;
-        public string detalhes { get; set; } = string.Empty;
-        public string stack { get; set; } = string.Empty;
+        public string? detalhes { get; set; } = string.Empty;
+        public string? stack { get; set; } = string.Empty;
 
         public ErrorModel() { }
 

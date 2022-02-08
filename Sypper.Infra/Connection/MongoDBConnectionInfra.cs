@@ -9,7 +9,9 @@ namespace Sypper.Infra.Connection
     {
         private MGConnectionSettingsModel Settings;
         private MongoClient Conn;
-        private IMongoDatabase DB;        
+        private IMongoDatabase DB;
+
+        public MongoDBConnectionInfra() { }
 
         public MongoDBConnectionInfra(string Server, int Port, string Username, string Password, string Database, int Timeout = 0)
         {
@@ -63,7 +65,7 @@ namespace Sypper.Infra.Connection
         public ReturnModel<T> QueryTo<T>(string Regex, string Collection)
         {
             MongoDBConnectionInfra Connection = new MongoDBConnectionInfra(Settings);
-            IMongoCollection<T> BookEntity = default;
+            IMongoCollection<T> BookEntity = Activator.CreateInstance<IMongoCollection<T>>(); ;
             ReturnModel<T> Processo = new ReturnModel<T>();
             try
             {
@@ -78,7 +80,7 @@ namespace Sypper.Infra.Connection
                     }
                     else
                     {
-                        Processo.Fail("Falha ao realizar a consulta.", null);
+                        Processo.Fail("Falha ao realizar a consulta.");
                     }
                 }
                 else 
@@ -117,7 +119,7 @@ namespace Sypper.Infra.Connection
                     }
                     else
                     {
-                        Processo.Fail("Falha ao realizar a consulta.", null);
+                        Processo.Fail("Falha ao realizar a consulta.");
                     }
                 }
                 else 
