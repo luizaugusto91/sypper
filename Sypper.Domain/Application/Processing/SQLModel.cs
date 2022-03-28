@@ -1,4 +1,5 @@
 ﻿using Sypper.Domain.Application.Enumerators;
+using Sypper.Domain.Infra.Attributes;
 using Sypper.Domain.Infra.Data;
 
 namespace Sypper.Domain.Application.Processing
@@ -329,6 +330,60 @@ namespace Sypper.Domain.Application.Processing
             return result;
         }
 
+        public string TypeValueToString(TypeCode typeCode, dynamic Value)
+        {
+            string result = "";
+
+            switch (typeCode)
+            {
+                case TypeCode.Int16:
+                    result = Convert.ToInt16(Value).ToString();
+                    break;
+                case TypeCode.Int32:
+                    result = Convert.ToInt32(Value).ToString();
+                    break;
+                case TypeCode.Int64:
+                    result = Convert.ToInt64(Value).ToString();
+                    break;
+                case TypeCode.Double:
+                    result = Value.ToString().Replace(".", "").Replace(",", ".");
+                    break;
+                case TypeCode.String:
+                    result = $"'{Value.ToString()}'";
+                    break;
+                case TypeCode.DateTime:
+                    var datetime = Convert.ToDateTime(Value);
+
+                    // Verifica tipo de campo
+                    if (datetime.TimeOfDay != DateTime.Parse("00:00:00").TimeOfDay)
+                    {
+                        // DateTime
+                        if (datetime.Date != DateTime.Parse("0001-01-01").Date)
+                        {
+                            result = $"'{datetime.ToString("yyyy-MM-dd HH:mm:ss")}'";
+                        }
+                        else
+                        {
+                            // Time
+                            result = $"'{datetime.ToString("HH:mm:ss")}'";
+                        }
+                    }
+                    else
+                    {
+                        // Date
+                        result = $"'{datetime.ToString("yyyy-MM-dd")}'";
+                    }
+                    break;
+                case TypeCode.Boolean:
+                    result = Value.ToString();
+                    break;
+                default:
+                    result = $"'{Value.ToString()}'";
+                    break;
+            }
+            return result;
+        }
+
         public string MakeCondition(List<FieldsFilterModel> FilterByFields, bool ConditionalAnd = true)
         {
             // Verifica se possui filtros
@@ -368,6 +423,40 @@ namespace Sypper.Domain.Application.Processing
         }
         #endregion
 
+        #region Fields
+        private List<string> GetFiels()
+        {
+            var fields = new List<string>();
+
+            // Obtem os campos da classe excluindo os registros a serem ignorados
+            var ignore = this.GetType().GetProperties().Where(prop => Attribute.IsDefined(prop, typeof(Core)));
+            List<string> list = new List<string>();
+
+            foreach (var prop in ignore)
+            {
+                var Arg = prop.CustomAttributes.Where(a => a.AttributeType.Name == "Core").ToList();
+                if (Arg.Count > 0)
+                {
+                    var attribute = new Core(Arg[0].NamedArguments.ToList());
+
+                    if (attribute.Ignore) list.Add(prop.Name);
+                }
+            }
+
+            // Obtem os campos da classe
+            var props = this.GetType().GetProperties();
+            foreach (var prop in props)
+            {
+                if (!list.Exists(r => r == prop.Name))
+                {
+                    fields.Add(prop.Name);
+                }
+            }
+
+            return fields;
+        }
+        #endregion
+
         #region Instruções
 
         #region SELECT
@@ -379,14 +468,8 @@ namespace Sypper.Domain.Application.Processing
 
             // Iniciar o processo de montagem do SQL
             string SQL = string.Empty;
-            List<string> Fields = new List<string>();
 
-            // Obtem os campos da classe
-            var props = this.GetType().GetProperties();
-            foreach (var prop in props)
-            {
-                Fields.Add(prop.Name);
-            }
+            List<string> Fields = this.GetFiels();
 
             // Monta o SQL
             SQL = $"SELECT {string.Join(", ", Fields)} FROM {table}";
@@ -401,14 +484,8 @@ namespace Sypper.Domain.Application.Processing
 
             // Iniciar o processo de montagem do SQL
             string SQL = string.Empty;
-            List<string> Fields = new List<string>();
 
-            // Obtem os campos da classe
-            var props = this.GetType().GetProperties();
-            foreach (var prop in props)
-            {
-                Fields.Add(prop.Name);
-            }
+            List<string> Fields = this.GetFiels();
 
             // Monta o SQL
             SQL = $"SELECT {string.Join(", ", Fields)} FROM {table}";
@@ -458,14 +535,8 @@ namespace Sypper.Domain.Application.Processing
 
             // Iniciar o processo de montagem do SQL
             string SQL = string.Empty;
-            List<string> Fields = new List<string>();
 
-            // Obtem os campos da classe
-            var props = this.GetType().GetProperties();
-            foreach (var prop in props)
-            {
-                Fields.Add(prop.Name);
-            }
+            List<string> Fields = this.GetFiels();
 
             // Monta o SQL
             SQL = $"SELECT {string.Join(", ", Fields)} FROM {table}";
@@ -516,7 +587,8 @@ namespace Sypper.Domain.Application.Processing
 
             // Iniciar o processo de montagem do SQL
             string SQL = string.Empty;
-            List<string> Fields = new List<string>();
+
+            List<string> Fields = this.GetFiels();
 
             // Obtem os campos da classe
             var props = this.GetType().GetProperties();
@@ -586,14 +658,8 @@ namespace Sypper.Domain.Application.Processing
 
             // Iniciar o processo de montagem do SQL
             string SQL = string.Empty;
-            List<string> Fields = new List<string>();
 
-            // Obtem os campos da classe
-            var props = this.GetType().GetProperties();
-            foreach (var prop in props)
-            {
-                Fields.Add(prop.Name);
-            }
+            List<string> Fields = this.GetFiels();
 
             // Monta o SQL
             SQL = $"SELECT {string.Join(", ", Fields)} FROM {table}";
@@ -621,14 +687,8 @@ namespace Sypper.Domain.Application.Processing
 
             // Iniciar o processo de montagem do SQL
             string SQL = string.Empty;
-            List<string> Fields = new List<string>();
 
-            // Obtem os campos da classe
-            var props = this.GetType().GetProperties();
-            foreach (var prop in props)
-            {
-                Fields.Add(prop.Name);
-            }
+            List<string> Fields = this.GetFiels();
 
             // Monta o SQL
             SQL = $"SELECT {string.Join(", ", Fields)} FROM {table}";
@@ -690,55 +750,9 @@ namespace Sypper.Domain.Application.Processing
                     // Verifica se a propriedade possui valor, ignorar nulos
                     if (val != null)
                     {
-                        switch (typeCode)
-                        {
-                            case TypeCode.Int16:
-                                value = Convert.ToInt16(val).ToString();
-                                break;
-                            case TypeCode.Int32:
-                                value = Convert.ToInt32(val).ToString();
-                                break;
-                            case TypeCode.Int64:
-                                value = Convert.ToInt64(val).ToString();
-                                break;
-                            case TypeCode.Double:
-                                value = val.ToString();
-                                break;
-                            case TypeCode.String:
-                                value = $"'{val.ToString()}'";
-                                break;
-                            case TypeCode.DateTime:
-                                var datetime = Convert.ToDateTime(val);
+                        value = TypeValueToString(typeCode, val);
 
-                                // Verifica tipo de campo
-                                if (datetime.TimeOfDay != DateTime.Parse("00:00:00").TimeOfDay)
-                                {
-                                    // DateTime
-                                    if (datetime.Date != DateTime.Parse("0001-01-01").Date)
-                                    {
-                                        value = $"'{datetime.ToString("yyyy-MM-dd HH:mm:ss")}'";
-                                    }
-                                    else
-                                    {
-                                        // Time
-                                        value = $"'{datetime.ToString("HH:mm:ss")}'";
-                                    }
-                                }
-                                else
-                                {
-                                    // Date
-                                    value = $"'{datetime.ToString("yyyy-MM-dd")}'";
-                                }
-                                break;
-                            case TypeCode.Boolean:
-                                value = val.ToString();
-                                break;
-                            default:
-                                value = $"'{val.ToString()}'";
-                                break;
-                        }
                         // Adiciona o registro a lista
-
                         Fields.Add(new FieldsModel() { name = prop.Name, type = typeCode, value = value });
                     }
                 }
@@ -804,72 +818,9 @@ namespace Sypper.Domain.Application.Processing
                     // Verifica se a propriedade possui valor, ignorar nulos
                     if (val != null)
                     {
-                        switch (typeCode)
-                        {
-                            case TypeCode.Int16:
-                                value = val.ToString();
-                                break;
-                            case TypeCode.Int32:
-                                {
-                                    try
-                                    {
-                                        if (!prop.IsDefined(typeof(FlagsAttribute), false))
-                                        {
-                                            var intval = (int)Enum.Parse((Type)prop.PropertyType, val.ToString());                                            
-                                            value = intval.ToString();
-                                        }
-                                        else
-                                        {
-                                            value = val.ToString();
-                                        }
-                                    }
-                                    catch
-                                    {
-                                        value = val.ToString();
-                                    }
-                                }                                
-                                break;
-                            case TypeCode.Int64:
-                                value = val.ToString();
-                                break;
-                            case TypeCode.Double:
-                                value = val.ToString();
-                                break;
-                            case TypeCode.String:
-                                value = $"'{val.ToString()}'";
-                                break;
-                            case TypeCode.DateTime:
-                                var datetime = Convert.ToDateTime(val);
-
-                                // Verifica tipo de campo
-                                if (datetime.TimeOfDay != DateTime.Parse("00:00:00").TimeOfDay)
-                                {
-                                    // DateTime
-                                    if (datetime.Date != DateTime.Parse("0001-01-01").Date)
-                                    {
-                                        value = $"'{datetime.ToString("yyyy-MM-dd HH:mm:ss")}'";
-                                    }
-                                    else
-                                    {
-                                        // Time
-                                        value = $"'{datetime.ToString("HH:mm:ss")}'";
-                                    }
-                                }
-                                else
-                                {
-                                    // Date
-                                    value = $"'{datetime.ToString("yyyy-MM-dd")}'";
-                                }
-                                break;
-                            case TypeCode.Boolean:
-                                value = val.ToString();
-                                break;
-                            default:
-                                value = $"'{val.ToString()}'";
-                                break;
-                        }
+                        value = TypeValueToString(typeCode, val);
+                        
                         // Adiciona o registro a lista
-
                         Fields.Add(new FieldsModel() { name = prop.Name, type = typeCode, value = value });
                     }
                 }

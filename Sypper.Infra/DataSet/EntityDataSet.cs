@@ -1,4 +1,5 @@
-﻿using Sypper.Domain.Application.Interfaces;
+﻿using Sypper.Domain.Application.Extension;
+using Sypper.Domain.Application.Interfaces;
 using Sypper.Domain.Application.Processing;
 using Sypper.Domain.Generico.Processing;
 using Sypper.Domain.Infra.Connection;
@@ -290,7 +291,8 @@ namespace Sypper.Infra.EntityDataSet
             ReturnModel<List<T>> result = new ReturnModel<List<T>>();
             try
             {
-                var Query = Conn.QueryToList<T>(TableEntity.Select(TableEntity.FilterByKey(PrimaryKey), 100, page), TableEntity.GetTable());
+                //var Query = Conn.QueryToList<T>(TableEntity.Select(TableEntity.FilterByKey(PrimaryKey), 100, page), TableEntity.GetTable());
+                var Query = Conn.QueryToList<T>(TableEntity.Select(PrimaryKey, 100, page), TableEntity.GetTable());
                 if (Query.Validate())
                 {
                     result.Success("Lista obtida com sucesso.", Query.retorno);

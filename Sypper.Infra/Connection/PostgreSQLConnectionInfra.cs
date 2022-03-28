@@ -5,6 +5,7 @@ using System.Data;
 using System.Reflection;
 using Sypper.Domain.Application.Processing;
 using Sypper.Domain.Infra.Data;
+using Sypper.Domain.Application.Extension;
 
 namespace Sypper.Infra.Connection
 {    
@@ -29,17 +30,38 @@ namespace Sypper.Infra.Connection
                 timeout = Timeout
             };
 
-            Conn = new NpgsqlConnection(Settings.GetPGConnectionString());            
+            Conn = new NpgsqlConnection(Settings.GetConnectionString());            
         }
 
         public PostgreSQLConnectionInfra(PGConnectionSettingsModel SettingsData)
         {
             Settings = SettingsData;
-            Conn = new NpgsqlConnection(Settings.GetPGConnectionString());            
+            Conn = new NpgsqlConnection(Settings.GetConnectionString());            
         }
         #endregion
 
         #region Connection
+        public static ReturnModel<bool> ServerResponse(PGConnectionSettingsModel SettingsData)
+        {
+            ReturnModel<bool> result = new ReturnModel<bool>();
+            try
+            {
+                var Conn = new NpgsqlConnection(SettingsData.GetConnectionString());
+                Conn.Open();
+                Conn.Close();
+                result.Success("Conexão estabelecida com sucesso.", true);
+            }
+            catch (NpgsqlException n)
+            {
+                result.Fail("Não foi possivel abrir a conexão com os parâmetros informados.", new ErrorModel(n.ErrorCode, n.Message, "NO INSTRUCTION", n.StackTrace));
+            }
+            catch (Exception e)
+            {
+                result.Error("Erro ao tentar abrir a conexão com os parâmetros informados.", new ErrorModel(0, e.Message, "NO INSTRUCTION", e.StackTrace));
+            }
+            return result;
+        }
+
         public bool Opened()
         {
             return Conn.State == System.Data.ConnectionState.Open;
@@ -103,49 +125,6 @@ namespace Sypper.Infra.Connection
             {
                 Transaction.Commit();
             }
-        }
-        #endregion
-
-        #region Manipulate
-        private static T ConvertDataRow<T>(DataTable dt)
-        {
-            DataRow row = dt.Rows[0];
-            return GetItemDefault<T>(row);
-        }
-
-        private static List<T> ConvertDataTable<T>(DataTable dt)
-        {
-            List<T> data = new List<T>();
-            foreach (DataRow row in dt.Rows)
-            {
-                T item = GetItemDefault<T>(row);
-                data.Add(item);
-            }
-            return data;
-        }
-
-        private static T GetItemDefault<T>(DataRow dr)
-        {
-            T obj = Activator.CreateInstance<T>();
-            List<PropertyInfo> props = typeof(T).GetProperties().ToList();
-
-            foreach (DataColumn column in dr.Table.Columns)
-            {
-                var prop = props.Where(r => r.Name == column.ColumnName).FirstOrDefault();
-                if (prop != null)
-                {
-                    Type field = prop.PropertyType;
-                    var value = dr[column.ColumnName];
-                    if (value.GetType().Name == "DBNull")
-                    {
-                        value = default;
-                    }
-
-                    prop.SetValue(obj, value, null);
-                }
-            }
-
-            return (T)obj;
         }
         #endregion
 
@@ -543,7 +522,7 @@ namespace Sypper.Infra.Connection
 
                 if (Table.Rows.Count > 0)
                 {
-                    obj = ConvertDataRow<T>(Table);
+                    obj = EntityDataManipulate.ConvertDataRow<T>(Table);
 
                     result.Success("Consulta realizada com sucesso.", obj);
                 }
@@ -595,7 +574,7 @@ namespace Sypper.Infra.Connection
 
                 if (Table.Rows.Count > 0)
                 {
-                    obj = ConvertDataRow<T>(Table);
+                    obj = EntityDataManipulate.ConvertDataRow<T>(Table);
 
                     result.Success("Consulta realizada com sucesso.", obj);
                 }
@@ -647,7 +626,7 @@ namespace Sypper.Infra.Connection
 
                 if (Table.Rows.Count > 0)
                 {
-                    Lista = ConvertDataTable<T>(Table);
+                    Lista = EntityDataManipulate.ConvertDataTable<T>(Table);
                 }
                 else
                 {
@@ -699,7 +678,7 @@ namespace Sypper.Infra.Connection
 
                 if (Table.Rows.Count > 0)
                 {
-                    Lista = ConvertDataTable<T>(Table);
+                    Lista = EntityDataManipulate.ConvertDataTable<T>(Table);
                 }
                 else
                 {
@@ -751,7 +730,7 @@ namespace Sypper.Infra.Connection
 
                 if (Table.Rows.Count > 0)
                 {
-                    Lista = ConvertDataTable<T>(Table);
+                    Lista = EntityDataManipulate.ConvertDataTable<T>(Table);
                 }
                 else
                 {
@@ -801,7 +780,7 @@ namespace Sypper.Infra.Connection
 
                 if (Table.Rows.Count > 0)
                 {
-                    Lista = ConvertDataTable<T>(Table);                    
+                    Lista = EntityDataManipulate.ConvertDataTable<T>(Table);                    
                 }
                 else
                 {
@@ -851,7 +830,7 @@ namespace Sypper.Infra.Connection
 
                 if (Table.Rows.Count > 0)
                 {
-                    Lista = ConvertDataTable<T>(Table);
+                    Lista = EntityDataManipulate.ConvertDataTable<T>(Table);
                 }
                 else
                 {
@@ -903,7 +882,7 @@ namespace Sypper.Infra.Connection
 
                 if (Table.Rows.Count > 0)
                 {
-                    Lista = ConvertDataTable<T>(Table);
+                    Lista = EntityDataManipulate.ConvertDataTable<T>(Table);
                 }
                 else
                 {
@@ -955,7 +934,7 @@ namespace Sypper.Infra.Connection
 
                 if (Table.Rows.Count > 0)
                 {
-                    Lista = ConvertDataTable<T>(Table);
+                    Lista = EntityDataManipulate.ConvertDataTable<T>(Table);
                 }
                 else
                 {
@@ -980,5 +959,7 @@ namespace Sypper.Infra.Connection
             return result;
         }
         #endregion
+
+
     }
 }

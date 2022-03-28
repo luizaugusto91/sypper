@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -9,6 +9,9 @@
     <PackageTags>sql; nosql; postgres; mongodb;</PackageTags>
     <RepositoryUrl>https://github.com/jovemti/sypper</RepositoryUrl>
     <NeutralLanguage>pt-BR</NeutralLanguage>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+	<!-->Version>$(Version)</Version-->
+    <Version>1.0.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

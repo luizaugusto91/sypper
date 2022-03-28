@@ -1,6 +1,8 @@
-﻿namespace Sypper.Domain.Infra.Connection
+﻿using Sypper.Domain.Application.Interfaces;
+
+namespace Sypper.Domain.Infra.Connection
 {
-    public class PGConnectionSettingsModel
+    public class PGConnectionSettingsModel : IDataSettings
     {
         public string host { get; set; }
         public int port { get; set; }
@@ -8,7 +10,7 @@
         public string password { get; set; }
         public string database { get; set; }
         public int timeout { get; set; }
-
+        
         public PGConnectionSettingsModel()
         {
             timeout = 0;
@@ -24,7 +26,7 @@
             timeout = Timeout;
         }
 
-        public string GetPGConnectionString()
+        public string GetConnectionString()
         {
             return $"Server={host};Port={port};User ID={username};Password={password};Database={database};CommandTimeout={timeout}";
         }
